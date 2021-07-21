@@ -1,6 +1,6 @@
 # RHG Generator #
 
-Network generator for random hyperbolic graphs (RHGs) with a latent representation in a hyperbolic ball of d+1 dimensions. The generator returns the network in edgelist format and additionally a list of the node coordinates if desired. The generator can be operator in 3 different modes, see *Required Parameters* for lists of the required parameters per mode.
+Network generator for random hyperbolic graphs (RHGs) with a latent representation in a hyperbolic ball of *d+1* dimensions. The generator returns the network in edgelist format and additionally a list of the node coordinates if desired. The generator can be operator in 3 different modes, see *Required Parameters* for lists of the required parameters per mode.
 
 ### Dependencies
 - C++ 2011 compiler or newer (`std=c++11`)
@@ -25,14 +25,14 @@ Call the executable `generate_rhg` with the mode of choice (user-based, hybrid o
 #### Parameters
 * `-f` 		filename (either a `*.dat` filename or a filename without extension).
 * `-n` 		network size (integer > 1).
-* `-d` 		dimensionality d of the hyperbolic ball with dimensionality d + 1 (integer >= 1).
+* `-d` 		dimensionality d of the hyperbolic ball with dimensionality *d + 1* (integer >= 1).
 * `-u`		user-based mode (select one from `{-u, -h, -m}`.
 * `-h`		hybrid-mode (select one from `{-u, -h, -m}`.
 * `-m` 		model-based mode (select one from `{-u, -h, -m}`.
 * `-k`		average degree <k> (float > 0). 
 * `-c`		clustering coefficient c (0 <= float <= 1). 
 * `-t` 		rescaled temperature tau (float > 0).
-* `-g` 		negative power-law exponent gamma P(k)~k^(-gamma) (float >= 2).
+* `-g` 		negative power-law exponent gamma *P(k)~k^(-gamma)* (float >= 2).
 * `-a` 		radial component a (float >= 1).
 * `-nu`		scaling parameter nu (float > 0).
 * `-radius`	rescaled radius of the hyperbolic ball (float > 0).
