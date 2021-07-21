@@ -20,19 +20,19 @@ make
 - If compiling fails, please check if the required compiler and libraries are present and can be found by the compiler.
 
 ### Usage
-Call the executable `generate_rhg` with the mode of choice (user-based, hybrid or model-based) and provide the required parameters. Which parameters are required in which mode and what parameters can be chosen is listed below.
+Call the executable `generate_rhg` with the mode of choice (user-based, hybrid or model-based) and provide the required parameters. A full list of the available parameters and which parameters are required in which mode can found below.
 
 #### Parameters
 * `-f` 		filename (either a `*.dat` filename or a filename without extension).
 * `-n` 		network size (integer > 1).
-* `-d` 		dimensionality d of the hyperbolic ball with dimensionality *d + 1* (integer >= 1).
+* `-d` 		dimensionality d of the hyperbolic ball with dimensionality d + 1 (integer >= 1).
 * `-u`		user-based mode (select one from `{-u, -h, -m}`.
 * `-h`		hybrid-mode (select one from `{-u, -h, -m}`.
 * `-m` 		model-based mode (select one from `{-u, -h, -m}`.
 * `-k`		average degree <k> (float > 0). 
 * `-c`		clustering coefficient c (0 <= float <= 1). 
 * `-t` 		rescaled temperature tau (float > 0).
-* `-g` 		negative power-law exponent gamma *P(k)~k^(-gamma)* (float >= 2).
+* `-g` 		negative power-law exponent gamma P(k)~k^(-gamma) (float >= 2).
 * `-a` 		radial component a (float >= 1).
 * `-nu`		scaling parameter nu (float > 0).
 * `-radius`	rescaled radius of the hyperbolic ball (float > 0).
