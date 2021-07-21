@@ -1,4 +1,4 @@
-# RHG GENERATOR #
+# RHG Generator #
 
 Network generator for random hyperbolic graphs (RHGs) with a latent representation in a hyperbolic ball of d+1 dimensions. The generator returns the network in edgelist format and additionally a list of the node coordinates if desired.
 
@@ -9,21 +9,23 @@ Network generator for random hyperbolic graphs (RHGs) with a latent representati
 ### Setup
 - Install the required libraries using a package manager of choice.
 - Clone the repository.
-``` git clone https://gbudel@bitbucket.org/gbudel/rhg-generator.git ```
+``` 
+git clone https://gbudel@bitbucket.org/gbudel/rhg-generator.git 
+```
 - Navigate to the directory `rhg-generator` and invoke the `make` command.
 ```
 cd rhg-generator
 make
 ```
-- If compiling fails, please check if the required compiler and libraries are present.
+- If compiling fails, please check if the required compiler and libraries are present and can be found by the compiler.
 
 ### Usage
-Call the executable `generate_rhg` with the mode of choice (user-based, hybrid or model-based) and provide the required parameters. 
+Call the executable `generate_rhg` with the mode of choice (user-based, hybrid or model-based) and provide the required parameters. Which parameters are required in which mode and what parameters can be chosen is listed below.
 
 #### Parameters
 * `-f` 		filename (either a `*.dat` filename or a filename without extension).
 * `-n` 		network size (integer > 1).
-* `-d` 		dimensionality d of the hyperbolic ball with dimensionality d + 1(integer >= 1).
+* `-d` 		dimensionality d of the hyperbolic ball with dimensionality d + 1 (integer >= 1).
 * `-u`		user-based mode (select one from `{-u, -h, -m}`).
 * `-h`		hybrid-mode (select one from `{-u, -h, -m}`).
 * `-m` 		model-based mode (select one from `{-u, -h, -m}`).
@@ -38,9 +40,10 @@ Call the executable `generate_rhg` with the mode of choice (user-based, hybrid o
 * `-seed` 	option to provide pseudorandom generator seed (long != 0).
 
 #### Parameter requirements
-* `-u`		`-k` AND `-c` AND (`-g` OR `-a`).
-* `-h`		`-k` AND `-t` AND (`-g` OR `-a`).
-* `-m` 		`-t` AND (`-nu` OR `-radius`) AND (`-g` OR `-a`).
+* Always: `-f` AND `-n` AND `-d`.
+* `-u` user-based mode: `-k` AND `-c` AND [`-g` OR `-a`].
+* `-h` hybrid mode: `-k` AND `-t` AND [`-g` OR `-a`].
+* `-m` model-based mode: `-t` AND [`-nu` OR `-radius`] AND [`-g` OR `-a`].
 
 #### Output
 * `<filename>.dat` 		the network in edge list format separated by a whitespace.
@@ -48,12 +51,12 @@ Call the executable `generate_rhg` with the mode of choice (user-based, hybrid o
 * `<filename>.coord.dat`	(optional) a list of the node coordinates in the hyperbolic ball.
 
 ### Examples
-Hybrid: generate a network with n = 1000 nodes for d = 3, <k> = 10, gamma = 2.1 in the cold regime (tau = 1/2).
+Hybrid mode: generate a network with n = 1000 nodes for d = 3, <k> = 10, gamma = 2.1 in the cold regime (tau = 1/2).
 ```
 ./generate_rhg -f example.dat -n 1000 -d 3 -h -g 2.1 -k 10 -t 0.5
 ```
 
-Model-based: generate a network with n = 1000 nodes for d = 1, nu = 0.5, gamma = 2.0 in the hot regime (tau = 3/2) and export the coordinates afterwards with the -v switch.
+Model-based mode: generate a network with n = 1000 nodes for d = 1, nu = 0.5, gamma = 2.0 in the hot regime (tau = 3/2) and export the coordinates afterwards with the `-v` switch.
 ```
 ./generate_rhg -f example.dat -n 1000 -d 1 -m -a 1.0 -nu 0.5 -t 1.5 -v
 ```
