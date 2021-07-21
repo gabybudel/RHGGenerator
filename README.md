@@ -47,6 +47,7 @@ Call the executable `generate_rhg` with the mode of choice (user-based, hybrid o
 
 ### Output
 The following files will be created in the project directory.
+
 * `<filename>.dat` 		the network in edge list format separated by a whitespace.
 * `<filename>.meta.dat` 	a meta file with the chosen/computed network parameters.
 * `<filename>.coord.dat`	(optional) a list of the node coordinates in the hyperbolic ball.
@@ -57,7 +58,7 @@ Hybrid mode: generate a network with n = 1000 nodes for d = 3, <k> = 10, gamma =
 ./generate_rhg -f example.dat -n 1000 -d 3 -h -g 2.1 -k 10 -t 0.5
 ```
 
-Model-based mode: generate a network with n = 1000 nodes for d = 1, nu = 0.5, gamma = 2.0 in the hot regime (tau = 3/2) and export the coordinates afterwards with the `-v` switch.
+Model-based mode: generate a network with n = 1000 nodes for d = 1, a = 1.0, nu = 0.5 in the hot regime (tau = 3/2) and export the coordinates afterwards with the `-v` switch.
 ```
 ./generate_rhg -f example.dat -n 1000 -d 1 -m -a 1.0 -nu 0.5 -t 1.5 -v
 ```
