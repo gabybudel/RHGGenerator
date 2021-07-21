@@ -1,6 +1,6 @@
 # RHG Generator #
 
-Network generator for random hyperbolic graphs (RHGs) with a latent representation in a hyperbolic ball of d+1 dimensions. The generator returns the network in edgelist format and additionally a list of the node coordinates if desired.
+Network generator for random hyperbolic graphs (RHGs) with a latent representation in a hyperbolic ball of d+1 dimensions. The generator returns the network in edgelist format and additionally a list of the node coordinates if desired. The generator can be operator in 3 different modes, see *Required Parameters* for lists of the required parameters per mode.
 
 ### Dependencies
 - C++ 2011 compiler or newer (`std=c++11`)
@@ -26,9 +26,9 @@ Call the executable `generate_rhg` with the mode of choice (user-based, hybrid o
 * `-f` 		filename (either a `*.dat` filename or a filename without extension).
 * `-n` 		network size (integer > 1).
 * `-d` 		dimensionality d of the hyperbolic ball with dimensionality d + 1 (integer >= 1).
-* `-u`		user-based mode (select one from `{-u, -h, -m}`).
-* `-h`		hybrid-mode (select one from `{-u, -h, -m}`).
-* `-m` 		model-based mode (select one from `{-u, -h, -m}`).
+* `-u`		user-based mode (select one from `{-u, -h, -m}`.
+* `-h`		hybrid-mode (select one from `{-u, -h, -m}`.
+* `-m` 		model-based mode (select one from `{-u, -h, -m}`.
 * `-k`		average degree <k> (float > 0). 
 * `-c`		clustering coefficient c (0 <= float <= 1). 
 * `-t` 		rescaled temperature tau (float > 0).
@@ -39,13 +39,14 @@ Call the executable `generate_rhg` with the mode of choice (user-based, hybrid o
 * `-v` 		optional switch whether or not to export node coordinates after generation (`<filename>.coord.dat`).
 * `-seed` 	option to provide pseudorandom generator seed (long != 0).
 
-#### Parameter requirements
-* Always: `-f` AND `-n` AND `-d`.
+#### Required Parameters
+* `-f` AND `-n` AND `-d`.
 * `-u` user-based mode: `-k` AND `-c` AND [`-g` OR `-a`].
 * `-h` hybrid mode: `-k` AND `-t` AND [`-g` OR `-a`].
 * `-m` model-based mode: `-t` AND [`-nu` OR `-radius`] AND [`-g` OR `-a`].
 
-#### Output
+### Output
+The following files will be created in the project directory.
 * `<filename>.dat` 		the network in edge list format separated by a whitespace.
 * `<filename>.meta.dat` 	a meta file with the chosen/computed network parameters.
 * `<filename>.coord.dat`	(optional) a list of the node coordinates in the hyperbolic ball.
