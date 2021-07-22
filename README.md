@@ -20,7 +20,7 @@ make
 - If compiling fails, please check if the required compiler and libraries are present and can be found by the compiler.
 
 ### Usage
-Call the executable `generate_rhg` with the mode of choice (user-based, hybrid or model-based) and provide the required parameters. A full list of the available parameters and which parameters are required in which mode can found below.
+Call the executable `generate_rhg` with the mode of choice (user-based, hybrid or model-based) and provide the required parameters. Parameter flags and values should be seperated by a whitespace, e.g., `-n 1000` sets the number of nodes to 1000. A full list of the available parameters and which parameters are required in which mode can found below.
 
 #### Parameters
 * `-f` 		filename (either a `*.dat` filename or a filename without extension).
