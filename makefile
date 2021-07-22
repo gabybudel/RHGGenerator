@@ -3,14 +3,16 @@ CXX = g++
 CFLAGS  = -Wall -g -Os -std=c++11
 INCLUDES = -I/usr/local/include
 LDFLAGS = -lm -lgsl -lgslcblas -L/usr/local/lib
+SRC = main.cpp
+OBJ = main.o
 TARGET = generate_rhg
 	
-$(TARGET): main.o
-	$(CXX) $(CFLAGS) -o $(TARGET) main.o $(LDFLAGS)	
+$(TARGET): $(OBJ)
+	$(CXX) $(CFLAGS) -o $@ $< $(LDFLAGS)	
 	
-main.o: main.cpp
-	$(CXX) $(CFLAGS) $(INCLUDES) -c main.cpp -o main.o
+$(OBJ): $(SRC)
+	$(CXX) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 .PHONY: clean
 clean:
-	rm -rf main.o
+	rm -rf $(OBJ)
