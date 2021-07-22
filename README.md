@@ -40,10 +40,11 @@ Call the executable `generate_rhg` with the mode of choice (user-based, hybrid o
 * `-seed` 	option to provide pseudorandom generator seed (long != 0).
 
 #### Required Parameters
-* `-f` AND `-n` AND `-d`.
-* `-u` user-based mode: `-k` AND `-c` AND [`-g` OR `-a`].
-* `-h` hybrid mode: `-k` AND `-t` AND [`-g` OR `-a`].
-* `-m` model-based mode: `-t` AND [`-nu` OR `-radius`] AND [`-g` OR `-a`].
+* Required: `-f AND -n AND -d`.
+* `-u` user-based mode: `-k AND -c AND [-g OR -a]`.
+* `-h` hybrid mode: `-k AND -t AND [-g OR -a]`.
+* `-m` model-based mode: `-t AND [-nu OR -radius] AND [-g OR -a]`.
+* Optional: `-v`, `-seed`.
 
 ### Output
 The following files will be created in the project directory.
