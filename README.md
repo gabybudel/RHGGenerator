@@ -1,6 +1,6 @@
 # RHG Generator #
 
-Network generator for random hyperbolic graphs (RHGs) with a latent representation in a hyperbolic ball of *d+1* dimensions. The generator returns the network in edgelist format and additionally a list of the node coordinates if desired. The generator can be operator in 3 different modes, see *Required Parameters* for lists of the required parameters per mode.
+Network generator for random hyperbolic graphs (RHGs) with a latent representation in a hyperbolic ball of *d+1* dimensions. The generator returns the network in edgelist format and additionally a list of the node coordinates if desired. The generator can be operated in 3 different modes, see *Required Parameters* for lists of the required parameters per mode.
 
 ### Dependencies
 - C++ 2011 compiler or newer (`std=c++11`)
@@ -36,20 +36,19 @@ Call the executable `generate_rhg` with the mode of choice (user-based, hybrid o
 * `-a` 		radial component a (float >= 1).
 * `-nu`		scaling parameter nu (float > 0).
 * `-radius`	rescaled radius of the hyperbolic ball (float > 0).
-* `-v` 		optional switch whether or not to export node coordinates after generation (`<filename>.coord.dat`).
-* `-seed` 	option to provide pseudorandom generator seed (long != 0).
+* `-v` 		(optional) a switch whether or not to export node coordinates after generation (`<filename>.coord.dat`).
+* `-seed` 	(optional) the seed for the pseudorandom generator (long != 0).
 
 #### Required Parameters
 * Required: `-f AND -n AND -d`.
 * `-u` user-based mode: `-k AND -c AND [-g OR -a]`.
 * `-h` hybrid mode: `-k AND -t AND [-g OR -a]`.
 * `-m` model-based mode: `-t AND [-nu OR -radius] AND [-g OR -a]`.
-* Optional: `-v`, `-seed`.
 
 ### Output
 The following files will be created in the project directory.
 
-* `<filename>.dat` 		the network in edge list format separated by a whitespace.
+* `<filename>.dat` 		the network in edge list format with node indices separated by a whitespace.
 * `<filename>.meta.dat` 	a meta file with the chosen/computed network parameters.
 * `<filename>.coord.dat`	(optional) a list of the node coordinates in the hyperbolic ball.
 
