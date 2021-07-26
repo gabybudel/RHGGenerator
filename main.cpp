@@ -312,32 +312,27 @@ double constantIdk(const int &dim, const int &k) {
 	return (sqrt(pi) * (tgamma((dim - k + 1) / 2.0) / tgamma(1 + (dim - k) / 2.0)));
 }
 
-double getHypDist(const int &dim, const double& zeta, const vector<double>& hidden, \
-	const vector<double>& hidden_prime) {
-	/* Compute hyperbolic distance between two points. Approximate trig functions inside acosh(). */
+double getCosAngle(int& dim, vector<double>& sin_theta, vector<double>& sin_theta_prime, vector<double>& cos_theta, vector<double>& cos_theta_prime) {
+	/* Compute cosine of angle between two points. Require pre-calculated sine/cosine of angle in each dimension. */
 
-	// Obtain radial distances node pair
-	double radial = hidden[0];
-	double radial_prime = hidden_prime[0];
-
-	// Calculate angle between the two points across the d dimensions
 	double sineProduct = 1;
 	double cosAngle = 0;
 	for (int d = 0; d < dim; d++) {
-		cosAngle += sineProduct * cos(hidden[d + 1]) * cos(hidden_prime[d + 1]);
-		sineProduct *= sin(hidden[d + 1]) * sin(hidden_prime[d + 1]);
+		cosAngle += sineProduct * cos_theta[d] * cos_theta_prime[d];
+		sineProduct *= sin_theta[d] * sin_theta_prime[d];
 	}
 	cosAngle += sineProduct;
 
-	// Calculate hyperbolic distance
-	//double coshDist = (cosh(zeta * radial) * cosh(zeta * radial_prime)) - (sinh(zeta * radial) * sinh(zeta * radial_prime) * cosAngle);
-	double hypDist = (1.0 / zeta) * acosh((cosh(zeta * radial) * cosh(zeta * radial_prime)) - (sinh(zeta * radial) * sinh(zeta * radial_prime) * cosAngle));
-	//double hypDist = acosh(exp(zeta * (radial + radial_prime)) * (1.0 - cosAngle) / 4.0) / zeta;  // Approximate hyperbolic trig functions inside acosh()
-
-	return hypDist;
+	return cosAngle;
 }
 
-double getConnProb(const double& hypDist, const double& zeta, const double& temp, const double& mu) {
+double getHypDist(double& zeta, double& radial, double& radial_prime, double& cosAngle) {
+	/* Compute hyperbolic distance between two points. */
+
+	return acosh((cosh(zeta * radial) * cosh(zeta * radial_prime)) - (sinh(zeta * radial) * sinh(zeta * radial_prime) * cosAngle));
+}
+
+double getConnProb(double& hypDist, double& zeta, double& temp, double& mu) {
 	/* Compute connection probability in the RHG model for two points with given hyperbolic distance. */
 
 	return 1.0 / (1.0 + exp((zeta / (2.0 * temp)) * (hypDist - mu)));
@@ -749,8 +744,8 @@ int main(int argc, char* argv[]) {
 		rightInit = 50.0;
 	}
 	else {
-		// Search for rescaled radius in (0, 40.0)
-		rightInit = 40.0;
+		// Search for rescaled radius in (0, 35.0)
+		rightInit = 35.0;
 	}
 	double TOL = 1e-3;
 	bool debug = false;
@@ -820,7 +815,10 @@ int main(int argc, char* argv[]) {
 	ofstream ofile, expfile, mfile, logfile;
 
 	/* Generate n points in a hyperbolic ball of dimensionality d + 1 */
-	vector<vector<double>> hidden(nodes, vector<double>(dim + 1, 0));  // Each node has hidden variables r, \theta_1, ..., \theta_d
+	vector<vector<double>> theta(nodes, vector<double>(dim, 0));  // Each node has angular coordinates \theta_1, ..., \theta_d
+	vector<vector<double>> sin_theta(nodes, vector<double>(dim, 0));  // Pre-caculated sine of angular coordinates
+	vector<vector<double>> cos_theta(nodes, vector<double>(dim, 0));  // Pre-caculated cosine of angular coordinates
+	vector<double> radial(nodes, 0); // Each node has a radial coordinate r
 	double candidate;
 	bool accepted;
 	cout << endl << "Generating coordinates... ";
@@ -829,7 +827,7 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < nodes; i++) {
 
 		// Radial coordinate
-		hidden[i][0] = (1.0 / (alpha * dim)) * log(ran1(&idum) * (exp(alpha * dim * radiusHyp) - 1.0) + 1.0);
+		radial[i] = (1.0 / (alpha * dim)) * log(ran1(&idum) * (exp(alpha * dim * radiusHyp) - 1.0) + 1.0);
 
 		// Angular coordinates dimensions 1 to d-1
 		for (int d = 0; d < dim - 1; d++) {
@@ -843,7 +841,9 @@ int main(int argc, char* argv[]) {
 				if (ran1(&idum) <= pow(sin(candidate), (double)(dim - d - 2))) {
 					// Accept candidate when unif random nr <= pdf
 
-					hidden[i][d + 1] = candidate;
+					theta[i][d] = candidate;
+					sin_theta[i][d] = sin(theta[i][d]);
+					cos_theta[i][d] = cos(theta[i][d]);
 					accepted = true;
 				}
 			}
@@ -851,7 +851,9 @@ int main(int argc, char* argv[]) {
 
 
 		// Draw angular coordinate final dimension
-		hidden[i][dim] = ran1(&idum) * 2.0 * pi;
+		theta[i][dim - 1] = ran1(&idum) * 2.0 * pi;
+		sin_theta[i][dim - 1] = sin(theta[i][dim - 1]);
+		cos_theta[i][dim - 1] = cos(theta[i][dim - 1]);
 
 	}
 	float time_coords = (float)(clock() - t_coords_start) / CLOCKS_PER_SEC;
@@ -868,11 +870,11 @@ int main(int argc, char* argv[]) {
 
 		// Write coordinates for all nodes
 		for (int i = 0; i < nodes; i++) {
-			expfile << i;
+			expfile << i << ' ' << radial[i];
 
 			// Write coordinates of all dimensions
-			for (int d = 0; d < dim + 1; d++) {
-				expfile << ' ' << hidden[i][d];
+			for (int d = 0; d < dim; d++) {
+				expfile << ' ' << theta[i][d];
 			}
 
 			expfile << endl;
@@ -891,7 +893,7 @@ int main(int argc, char* argv[]) {
 	mfile.close();
 
 	/* Simulate connections */
-	double hypDist, connectionProb;
+	double hypDist, connectionProb, cosAngle;
 	cout << "Generating links... ";
 	cout.flush();
 	t_connections_start = clock();
@@ -901,8 +903,11 @@ int main(int argc, char* argv[]) {
 		for (int i = 0; i < nodes - 1; i++) {
 			for (int j = i + 1; j < nodes; j++) {
 
+				// Calculate angle between i and j
+				cosAngle = getCosAngle(dim, sin_theta[i], sin_theta[j], cos_theta[i], cos_theta[j]);
+
 				// Calculate hyperbolic distance between i and j
-				hypDist = getHypDist(dim, zeta, hidden[i], hidden[j]);
+				hypDist = getHypDist(zeta, radial[i], radial[j], cosAngle);
 
 				// Connect nodes in the step model if distance < radius
 				if (hypDist < radiusHyp) {
@@ -913,14 +918,19 @@ int main(int argc, char* argv[]) {
 	}
 	else {
 		// Tau > 0
+		int count = 0;
+		float draw;
 		for (int i = 0; i < nodes - 1; i++) {
 			for (int j = i + 1; j < nodes; j++) {
 
+				// Calculate angle between i and j
+				cosAngle = getCosAngle(dim, sin_theta[i], sin_theta[j], cos_theta[i], cos_theta[j]);
+
 				// Calculate hyperbolic distance between i and j
-				hypDist = getHypDist(dim, zeta, hidden[i], hidden[j]);
+				hypDist = getHypDist(zeta, radial[i], radial[j], cosAngle);
 
 				// Calculate connection probability nodes i and j
-				connectionProb = getConnProb(hypDist, zeta, temp, mu); 
+				connectionProb = getConnProb(hypDist, zeta, temp, mu);
 
 				// Simulate connection probability and assign link accordingly
 				if (ran1(&idum) < connectionProb) {
@@ -940,12 +950,6 @@ int main(int argc, char* argv[]) {
 	cout << "Generating coordinates: " << time_coords << endl;
 	cout << "Generating links: " << time_connections << endl;
 	cout << "Overall: " << time_execution << endl;
-	
-	
-	// Code for logging the generation time
-	//logfile.open("time_log.dat", ios::out | ios::app);
-	//logfile << networkName << ' ' << nodes << ' ' << dim << ' ' << time_execution << endl;
-	//logfile.close();
 
 	return 0;
 }
