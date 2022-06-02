@@ -61,6 +61,7 @@ Model-based mode: generate a network with *n = 1,000* nodes for dimensionality *
 
 ### Numerical considerations
 To prevent numerical issues within the computations, the following cut-off values in the parameters are applied based on the user inputs:
+
 * When *tau < 0.05*, links are generated deterministically as if *tau = 0* (and when *tau < 0*, an error is thrown).
 * When *|tau - 1| < 0.01*, the scaling of the critical regime *tau = 1* is invoked.
 * When *tau >= 1.01*, the scaling of the hot regime *tau > 1* is invoked, and the parameters must adhere to *gamma <= tau + 1*, otherwise an error is thrown (because the parameters imply *a < 1*).
