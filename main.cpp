@@ -19,7 +19,7 @@
 const double pi = 3.14159265358979323846;
 
 /* Integration parameters */
-struct int_params { int nodes; int d; double radius; double tau; double aCoeff; double constantId; };
+struct int_params { double nodes; double d; double radius; double tau; double aCoeff; double constantId; };
 
 class InputParser {
 	/**
@@ -162,8 +162,8 @@ double avg_k(double* x, size_t dim, void* passed_parameters) {
 
 	double factor = (params->nodes - 1.0) * (pow(params->aCoeff, 2.0) / params->constantId);
 	return factor * std::exp(params->aCoeff * (x[0] - params->radius)) * std::exp(params->aCoeff * (x[1] - params->radius)) * \
-		(pow(sin(x[2]), params->d - 1.0) / (1.0 + std::exp((x[0] + x[1] - params->radius) / params->tau) * \
-			pow(sin(x[2] / 2.0), params->d / params->tau)));
+		(std::pow(std::sin(x[2]), params->d - 1.0) / (1.0 + std::exp((x[0] + x[1] - params->radius) / params->tau) * \
+			std::pow(std::sin(x[2] / 2.0), params->d / params->tau)));
 }
 
 double avg_k_tzero(double* x, size_t dim, void* passed_parameters) {
@@ -174,10 +174,10 @@ double avg_k_tzero(double* x, size_t dim, void* passed_parameters) {
 
 	double factor = (params->nodes - 1.0) * (pow(params->aCoeff, 2.0) / params->constantId);
 	return factor * std::exp(params->aCoeff * (x[0] - params->radius)) * std::exp(params->aCoeff * (x[1] - params->radius)) * \
-		pow(sin(x[2]), params->d - 1.0) * heaviside(params->radius - x[0] - x[1] - (params->d * std::log(sin(x[2]/2.0))));
+		std::pow(std::sin(x[2]), params->d - 1.0) * heaviside(params->radius - x[0] - x[1] - (params->d * std::log(std::sin(x[2]/2.0))));
 }
 
-double integralAvgDegMISER(const double& radius, const int& nodes, const int& dim, const double& rescaledTemp, \
+double integralAvgDegMISER(const double& radius, const long& nodes, const int& dim, const double& rescaledTemp, \
 	const double& aCoeff, const double& constantId, const double& cutoff1, gsl_rng* r, const bool& debug) {
 	/* Integral computation for desired average degree <k> with the MISER algorithm Monte Carlo integration. */
 
@@ -199,7 +199,7 @@ double integralAvgDegMISER(const double& radius, const int& nodes, const int& di
 		// For tau > 0 we integrate over the regular connection probability function
 		integrand = { &avg_k, 3, 0 };
 	}
-	struct int_params params = { nodes, dim, radius, rescaledTemp, aCoeff, constantId };
+	struct int_params params = { (double)nodes, (double)dim, radius, rescaledTemp, aCoeff, constantId };
 	integrand.params = &params;
 
 	// GSL settings
@@ -217,7 +217,7 @@ double integralAvgDegMISER(const double& radius, const int& nodes, const int& di
 
 }
 
-double integralAvgDeg(const double& radius, const int& nodes, const int& dim, const double& rescaledTemp, \
+double integralAvgDeg(const double& radius, const long& nodes, const int& dim, const double& rescaledTemp, \
 	const double& aCoeff, const double& constantId, const double& cutoff1, gsl_rng* r, const bool& debug) {
 	/* Integral computation for desired average degree <k> with importance sampling Monte Carlo integration. */
 
@@ -239,7 +239,7 @@ double integralAvgDeg(const double& radius, const int& nodes, const int& dim, co
 		// For tau > 0 we integrate over the regular connection probability function
 		integrand = { &avg_k, 3, 0 };
 	}
-	struct int_params params = { nodes, dim, radius, rescaledTemp, aCoeff, constantId };
+	struct int_params params = { (double)nodes, (double)dim, radius, rescaledTemp, aCoeff, constantId };
 	integrand.params = &params;
 
 	// GSL settings
@@ -260,14 +260,14 @@ double integralAvgDeg(const double& radius, const int& nodes, const int& dim, co
 
 }
 
-double targetAvgDegMISER(const double& radius, const double& avgDeg, const int& nodes, const int& dim, \
+double targetAvgDegMISER(const double& radius, const double& avgDeg, const long& nodes, const int& dim, \
 	const double& rescaledTemp, const double& aCoeff, const double& constantId, const double& cutoff1, gsl_rng* r, const bool& debug) {
 	/* Target function of integral computation for desired average degree <k> with the MISER algorithm Monte Carlo integration. */
 
 	return integralAvgDegMISER(radius, nodes, dim, rescaledTemp, aCoeff, constantId, cutoff1, r, debug) - avgDeg;
 }
 
-double targetAvgDeg(const double& radius, const double& avgDeg, const int& nodes, const int& dim, \
+double targetAvgDeg(const double& radius, const double& avgDeg, const long& nodes, const int& dim, \
 	const double& rescaledTemp, const double& aCoeff, const double& constantId, const double& cutoff1, gsl_rng* r, const bool& debug) {
 	/* Target function computation integral for desired average degree <k> with importance sampling Monte Carlo integration. */
 
@@ -275,7 +275,7 @@ double targetAvgDeg(const double& radius, const double& avgDeg, const int& nodes
 }
 
 
-double bisection(const double& avgDeg, const double& leftInit, const double& rightInit, const int& nodes, \
+double bisection(const double& avgDeg, const double& leftInit, const double& rightInit, const long& nodes, \
 	const int& dim, const double& rescaledTemp, const double& aCoeff, const double& constantId, const double& cutoff1, \
 	gsl_rng* r, const double& TOL, const bool& debug) {
 	/* Compute rescaled radius numerically with bisection method for desired average degree <k>. */
@@ -335,7 +335,7 @@ double constantIdk(const int &dim, const int &k) {
 	return (std::sqrt(pi) * (std::tgamma((dim - k + 1) / 2.0) / std::tgamma(1 + (dim - k) / 2.0)));
 }
 
-double getCosAngle(int& dim, std::vector<double>& sin_theta, std::vector<double>& sin_theta_prime, std::vector<double>& cos_theta, std::vector<double>& cos_theta_prime) {
+double getCosAnglePreCalc(int& dim, std::vector<double>& sin_theta, std::vector<double>& sin_theta_prime, std::vector<double>& cos_theta, std::vector<double>& cos_theta_prime) {
 	/* Compute cosine of angle between two points. Require pre-calculated sine/cosine of angle in each dimension. */
 
 	double sineProduct = 1;
@@ -343,6 +343,20 @@ double getCosAngle(int& dim, std::vector<double>& sin_theta, std::vector<double>
 	for (int d = 0; d < dim; d++) {
 		cosAngle += sineProduct * cos_theta[d] * cos_theta_prime[d];
 		sineProduct *= sin_theta[d] * sin_theta_prime[d];
+	}
+	cosAngle += sineProduct;
+
+	return cosAngle;
+}
+
+double getCosAngle(int& dim, std::vector<double>& theta, std::vector<double>& theta_prime) {
+	/* Compute cosine of angle between two points. */
+
+	double sineProduct = 1;
+	double cosAngle = 0;
+	for (int d = 0; d < dim; d++) {
+		cosAngle += sineProduct * std::cos(theta[d]) * std::cos(theta_prime[d]);
+		sineProduct *= std::sin(theta[d]) * std::sin(theta_prime[d]);
 	}
 	cosAngle += sineProduct;
 
@@ -361,9 +375,9 @@ double getConnProb(double& hypDist, double& zeta, double& temp, double& mu) {
 	return 1.0 / (1.0 + std::exp((zeta / (2.0 * temp)) * (hypDist - mu)));
 }
 
-bool parseInput(InputParser& input, long& idum, bool& exportCoordinates, int& nodes, int& dim, int& mode, \
+bool parseInput(InputParser& input, long& idum, bool& exportCoordinates, long& nodes, int& dim, int& mode, \
 	double& avgDeg, double& rescaledTemp, double& aCoeff, double& gamma, double& nu, double& rescaledRadius, \
-	double& cutoff1, double& cutoff2, double& cutoff3, std::string& fname, \
+	double& cutoff1, double& cutoff2, double& cutoff3, long& maxNodes, std::string& fname, \
 	std::string& networkName, std::string& exportFile, std::string& metaFile) {
 	/* Parse user input and perform input checks. */
 	
@@ -415,7 +429,15 @@ bool parseInput(InputParser& input, long& idum, bool& exportCoordinates, int& no
 		std::string nodesString = input.getCmdOption("-n");
 		if (!nodesString.empty()) {
 			if (nodesString.find(".") == std::string::npos) {
-				nodes = std::stoi(nodesString);
+				long long nodesTemp = std::stoll(nodesString);
+				if(nodesTemp <= maxNodes) {
+					nodes = (long) nodesTemp;
+				} else {
+					std::cout << "Network size n too large. " << \
+						"Use the -n option to provide the network size n." << std::endl;
+					return true;
+				}
+				
 				if (nodes <= 1) {
 					std::cout << "The network size n must be an integer > 1. " << \
 						"Use the -n option to provide the network size n." << std::endl;
@@ -473,8 +495,8 @@ bool parseInput(InputParser& input, long& idum, bool& exportCoordinates, int& no
 
 	// Mode
 	int nModes = 0;
-	if (input.cmdOptionExists("-u")) {
-		// User-based
+	if (input.cmdOptionExists("-m")) {
+		// Model-based
 		mode = 1;
 		nModes++;
 	}
@@ -483,31 +505,31 @@ bool parseInput(InputParser& input, long& idum, bool& exportCoordinates, int& no
 		mode = 2;
 		nModes++;
 	}
-	if (input.cmdOptionExists("-m")) {
-		// Model-based
+	if (input.cmdOptionExists("-u")) {
+		// User-based
 		mode = 3;
 		nModes++;
 	}
 	if(nModes == 0) {
-		std::cout << "No valid mode specified. Use one of the options: {-u, -h, -m}." << std::endl;
+		std::cout << "No valid mode specified. Use one of the options: {-m, -h}." << std::endl;
 		return true;
 	}
 	else if (nModes == 1) {
 		std::cout << "Mode: ";
 		switch (mode) {
-		case 1: std::cout << "user "; break;
+		case 1: std::cout << "model-based "; break;
 		case 2: std::cout << "hybrid "; break;
-		case 3: std::cout << "model-based "; break;
+		case 3: std::cout << "user "; break;
 		}
 		std::cout << std::endl;
 	}
 	else {
-		std::cout << "Multiple modes selected. Use only one of the options: {-u, -h, -m}." << std::endl;
+		std::cout << "Multiple modes selected. Use only one of the options: {-m, -h}." << std::endl;
 		return true;
 	}
 
 	// Mode dependent parameters
-	if (mode == 1) {
+	if (mode == 3) {
 		// User-based mode
 		std::cout << "User-based mode not yet available." << std::endl;
 		return true;
@@ -698,12 +720,17 @@ bool parseInput(InputParser& input, long& idum, bool& exportCoordinates, int& no
 				rescaledRadius = std::log(nodes / nu);
 				if (aCoeff > 1.0 + cutoff3) {
 					// a > 1
-					std::cout << "tau < 1, a > 1" << std::endl;
+					std::cout << "tau < 1, a > 1";
 				} 
 				else {
 					// a = 1
-					std::cout << "tau < 1, a = 1" << std::endl;
+					std::cout << "tau < 1, a = 1";
 				}
+				if (rescaledTemp < cutoff1) {
+					// tau = 0
+					std::cout << ", deterministic (tau -> 0)";
+				}
+				std::cout << std::endl;
 			}
 		}
 		else {
@@ -740,6 +767,10 @@ bool parseInput(InputParser& input, long& idum, bool& exportCoordinates, int& no
 				} 
 				else {
 					std::cout << "tau < 1, a = 1" << std::endl;
+				}
+				if (rescaledTemp < cutoff1) {
+					// tau = 0
+					std::cout << ", deterministic (tau -> 0)";
 				}
 			}
 		}
@@ -798,23 +829,24 @@ bool parseInput(InputParser& input, long& idum, bool& exportCoordinates, int& no
 int main(int argc, char* argv[]) {
 
 	/* Variable declaration */
-	long idum;
-	int nodes, dim, mode;
+	long idum, nodes;
+	int dim, mode;
 	double avgDeg, temp, rescaledTemp, alpha, aCoeff, gamma, mu, nu, zeta, \
 		radiusHyp, rescaledRadius, rescaledMu, constantId;
 	std::string fname, networkName, exportFile, metaFile;
-	bool exportCoordinates, degenerateModel = false;
+	bool exportCoordinates, degenerateModel = false, preCalc = false;
 
 	/* Numerical settings */
-	double TOL = 1e-3;
 	double cutoff1 = 0.05, cutoff2 = 0.01, cutoff3 = 0.01;
-	double numLimit = 600.0; 
+	double TOL = 1e-3, numLimit = 600.0, preCalcLimit = 1e7; 
+	long maxNodes = (long)1e9;
+	char* _emergencyMemory = new char[16384];  // reserve 16K of memory
 	bool debug = false;
 
 	/* Parse input */
 	InputParser input(argc, argv);
 	bool inputError = parseInput(input, idum, exportCoordinates, nodes, dim, mode, avgDeg, rescaledTemp, aCoeff, \
-		gamma, nu, rescaledRadius, cutoff1, cutoff2, cutoff3, fname, networkName, exportFile, metaFile);
+		gamma, nu, rescaledRadius, cutoff1, cutoff2, cutoff3, maxNodes, fname, networkName, exportFile, metaFile);
 	if (inputError) {
 		// Abort program
 		return 0;
@@ -836,8 +868,7 @@ int main(int argc, char* argv[]) {
 		// Hybrid mode: we need to find the radius numerically
 
 		double leftInit = 0.0, rightInit; 
-		if (nodes > 1e9) {
-			// TODO: do estimate based on log(n)
+		if (nodes > 1e8) {
 			// Search for rescaled radius in (0, 50.0)
 			rightInit = 50.0;
 		}
@@ -891,12 +922,17 @@ int main(int argc, char* argv[]) {
 			nu = nodes * std::exp(-rescaledRadius);
 			if (aCoeff > 1.0 + cutoff3) {
 				// a > 1
-				std::cout << "tau < 1, a > 1" << std::endl;
+				std::cout << "tau < 1, a > 1";
 			} 
 			else {
 				// a = 1
-				std::cout << "tau < 1, a = 1" << std::endl;
+				std::cout << "tau < 1, a = 1";
 			}
+			if (rescaledTemp < cutoff1) {
+				// tau = 0
+				std::cout << ", deterministic (tau -> 0)";
+			}
+			std::cout << std::endl;
 		}
 		std::cout << std::endl;
 
@@ -940,14 +976,19 @@ int main(int argc, char* argv[]) {
 	/* Print network information */
 	std::cout << "------ RHG settings ------" << std::endl;
 	std::cout << "File: " << fname << std::endl;
-	std::cout << "n: " << nodes << std::endl << "d: " << dim << std::endl << "a: " << aCoeff << std::endl \
-		<< "tau: " << rescaledTemp << std::endl << "nu: " << nu << std::endl << "radius: " << radiusHyp << std::endl \
-		<< "rescaled radius: " << rescaledRadius << std::endl;
+	std::cout << "n: " << nodes << std::endl << "d: " << dim << std::endl << "zeta: " << zeta << std::endl \
+	 << "a: " << aCoeff << std::endl << "tau: " << rescaledTemp << std::endl << "nu: " << nu << std::endl \
+	 << "radius: " << radiusHyp << std::endl << "rescaled radius: " << rescaledRadius << std::endl;
 
 	if(alpha * dim * radiusHyp > numLimit) {
+		// Parameter a extremely large wrt dimension d and network size n
 		degenerateModel = true;
 		std::cout << std::endl << "WARNING: value of parameter a extremely large wrt dimension d and network size n, " \
 		<< "resorting to degenerate RHG model where all radial coordinates r = R." << std::endl;
+	}
+	if(nodes < preCalcLimit) {
+		// Network size n small enough to use precalculated trigonometric values
+		preCalc = true;
 	}
 
 
@@ -955,145 +996,197 @@ int main(int argc, char* argv[]) {
 	std::ofstream ofile, expfile, mfile, logfile;
 
 	/* Generate n points in a hyperbolic ball of dimensionality d + 1 */
-	std::vector<std::vector<double>> theta(nodes, std::vector<double>(dim, 0.0));  // Each node has angular coordinates \theta_1, ..., \theta_d
-	std::vector<std::vector<double>> sin_theta(nodes, std::vector<double>(dim, 0.0));  // Pre-calculated sine of angular coordinates
-	std::vector<std::vector<double>> cos_theta(nodes, std::vector<double>(dim, 0.0));  // Pre-calculated cosine of angular coordinates
-	std::vector<double> radial(nodes, 0.0); // Each node has a radial coordinate r
-	double candidate;
-	bool accepted;
-	std::cout << std::endl << "Generating coordinates... ";
-	std::cout.flush();
-	t_coords_start = clock();
-	// Generate radial coordinates
-	if(degenerateModel) {
-		for (int i = 0; i < nodes; i++) {
-			radial[i] = radiusHyp;
-		}
-	} else {
-		for (int i = 0; i < nodes; i++) {
-			radial[i] = (1.0 / (alpha * dim)) * std::log(ran1(&idum) * (std::exp(alpha * dim * radiusHyp) - 1.0) + 1.0);
-		}
-	}
-	for (int i = 0; i < nodes; i++) {
-
-		// Angular coordinates dimensions 1 to d-1
-		for (int d = 0; d < dim - 1; d++) {
-
-			// Draw angular coordinate from [sin(theta)]^{d - k} with acceptance-rejection method
-			accepted = false;
-			while (!accepted) {
-				// Draw candidate 
-				candidate = acos(1.0 - 2.0 * ran1(&idum));
-
-				if (ran1(&idum) <= pow(sin(candidate), (double)(dim - d - 2.0))) {
-					// Accept candidate when unif random nr <= pdf
-					theta[i][d] = candidate;
-					sin_theta[i][d] = sin(theta[i][d]);
-					cos_theta[i][d] = cos(theta[i][d]);
-					accepted = true;
-				}
+	try {
+		std::vector<std::vector<double>> theta(nodes, std::vector<double>(dim, 0.0));  // Each node has angular coordinates \theta_1, ..., \theta_d
+		std::vector<double> radial(nodes, 0.0); // Each node has a radial coordinate r
+		double candidate;
+		bool accepted;
+		std::cout << std::endl << "Generating coordinates... ";
+		std::cout.flush();
+		t_coords_start = clock();
+		// Generate radial coordinates
+		if(degenerateModel) {
+			for (int i = 0; i < nodes; i++) {
+				radial[i] = radiusHyp;
+			}
+		} else {
+			for (int i = 0; i < nodes; i++) {
+				radial[i] = (1.0 / (alpha * dim)) * std::log(ran1(&idum) * (std::exp(alpha * dim * radiusHyp) - 1.0) + 1.0);
 			}
 		}
-
-
-		// Draw angular coordinate final dimension
-		theta[i][dim - 1] = ran1(&idum) * 2.0 * pi;
-		sin_theta[i][dim - 1] = sin(theta[i][dim - 1]);
-		cos_theta[i][dim - 1] = cos(theta[i][dim - 1]);
-
-	}
-	float time_coords = (float)(clock() - t_coords_start) / CLOCKS_PER_SEC;
-
-
-	/* Write coordinates */
-	if (exportCoordinates) {
-		expfile.open(exportFile, std::ios_base::out | std::ios_base::trunc);
-		expfile << "id radial";
-		for (int d = 0; d < dim; d++) {
-			expfile << " theta" << d + 1;
-		}
-		expfile << std::endl;
-
-		// Write coordinates for all nodes
 		for (int i = 0; i < nodes; i++) {
-			expfile << i << ' ' << radial[i];
 
-			// Write coordinates of all dimensions
+			// Angular coordinates dimensions 1 to d-1
+			for (int d = 0; d < dim - 1; d++) {
+
+				// Draw angular coordinate from [sin(theta)]^{d - k} with acceptance-rejection method
+				accepted = false;
+				while (!accepted) {
+					// Draw candidate 
+					candidate = acos(1.0 - 2.0 * ran1(&idum));
+
+					if (ran1(&idum) <= std::pow(std::sin(candidate), (double)(dim - d - 2.0))) {
+						// Accept candidate when unif random nr <= pdf
+						theta[i][d] = candidate;
+						accepted = true;
+					}
+				}
+			}
+
+			// Draw angular coordinate final dimension
+			theta[i][dim - 1] = ran1(&idum) * 2.0 * pi;
+
+		}
+		float time_coords = (float)(clock() - t_coords_start) / CLOCKS_PER_SEC;
+
+
+		/* Write coordinates */
+		if (exportCoordinates) {
+			expfile.open(exportFile, std::ios_base::out | std::ios_base::trunc);
+			expfile << "id radial";
 			for (int d = 0; d < dim; d++) {
-				expfile << ' ' << theta[i][d];
+				expfile << " theta" << d + 1;
 			}
-
 			expfile << std::endl;
+
+			// Write coordinates for all nodes
+			for (int i = 0; i < nodes; i++) {
+				expfile << i << ' ' << radial[i];
+
+				// Write coordinates of all dimensions
+				for (int d = 0; d < dim; d++) {
+					expfile << ' ' << theta[i][d];
+				}
+
+				expfile << std::endl;
+			}
+			expfile.close();
 		}
-		expfile.close();
-	}
-	std::cout << "Done." << std::endl;
+		std::cout << "Done." << std::endl;
 	
-	/* Write meta info */
-	mfile.open(metaFile, std::ios_base::out | std::ios_base::trunc);
-	mfile << "name: " << networkName << std::endl;
-	mfile << "nodes: " << nodes << std::endl << "dim: " << dim << std::endl << "alpha: " << alpha << std::endl \
-		<< "a: " << aCoeff << std::endl << "gamma: " << gamma << std::endl << "temp: " << temp << std::endl \
-		<< "tau: " << rescaledTemp << std::endl;
-	mfile << "nu: " << nu << std::endl << "radius: " << radiusHyp  << std::endl  << "scaled radius: " << rescaledRadius << std::endl;
-	mfile.close();
+		/* Write meta info */
+		mfile.open(metaFile, std::ios_base::out | std::ios_base::trunc);
+		mfile << "name: " << networkName << std::endl;
+		mfile << "nodes: " << nodes << std::endl << "dim: " << dim << std::endl << "zeta: " << zeta << std::endl \
+			<< "alpha: " << alpha << std::endl << "a: " << aCoeff << std::endl << "gamma: " << gamma << std::endl \
+			<< "temp: " << temp << std::endl << "scaled temp: " << rescaledTemp << std::endl;
+		mfile << "nu: " << nu << std::endl << "radius: " << radiusHyp  << std::endl  << "scaled radius: " << rescaledRadius << std::endl;
+		mfile.close();
 
-	/* Simulate connections */
-	double hypDist, connectionProb, cosAngle;
-	std::cout << "Generating links... ";
-	std::cout.flush();
-	t_connections_start = clock();
-	ofile.open(fname, std::ios_base::out | std::ios_base::trunc);
-	if (rescaledTemp < cutoff1) {
-		// At tau = 0 we have the step model
-		for (int i = 0; i < nodes - 1; i++) {
-			for (int j = i + 1; j < nodes; j++) {
+		/* Simulate connections */
+		double hypDist, connectionProb, cosAngle;
+		std::cout << "Generating links... ";
+		std::cout.flush();
+		t_connections_start = clock();
+		ofile.open(fname, std::ios_base::out | std::ios_base::trunc);
+		if (preCalc) {
+			std::vector<std::vector<double>> sin_theta(nodes, std::vector<double>(dim, 0.0));  // Pre-calculated sine of angular coordinates
+			std::vector<std::vector<double>> cos_theta(nodes, std::vector<double>(dim, 0.0));  // Pre-calculated cosine of angular coordinates
+			for (int i = 0; i < nodes; i++) {
+				for (int d = 0; d < dim; d++) {
+					sin_theta[i][d] = std::sin(theta[i][d]);
+					cos_theta[i][d] = std::cos(theta[i][d]);
+				}
+			}
+			if (rescaledTemp < cutoff1) {
+				// At tau = 0 we have the step model
+				for (int i = 0; i < nodes - 1; i++) {
+					for (int j = i + 1; j < nodes; j++) {
 
-				// Calculate angle between i and j
-				cosAngle = getCosAngle(dim, sin_theta[i], sin_theta[j], cos_theta[i], cos_theta[j]);
+						// Calculate angle between i and j
+						cosAngle = getCosAnglePreCalc(dim, sin_theta[i], sin_theta[j], cos_theta[i], cos_theta[j]);
 
-				// Calculate hyperbolic distance between i and j
-				hypDist = getHypDist(zeta, radial[i], radial[j], cosAngle);
+						// Calculate hyperbolic distance between i and j
+						hypDist = getHypDist(zeta, radial[i], radial[j], cosAngle);
 
-				// Connect nodes in the step model if distance < radius
-				if (hypDist < radiusHyp) {
-					ofile << i << ' ' << j << std::endl;
+						// Connect nodes in the step model if distance < radius
+						if (hypDist < radiusHyp) {
+							ofile << i << ' ' << j << std::endl;
+						}
+					}
+				}
+			}
+			else {
+				// Tau > 0
+				for (int i = 0; i < nodes - 1; i++) {
+					for (int j = i + 1; j < nodes; j++) {
+
+						// Calculate angle between i and j
+						cosAngle = getCosAnglePreCalc(dim, sin_theta[i], sin_theta[j], cos_theta[i], cos_theta[j]);
+
+						// Calculate hyperbolic distance between i and j
+						hypDist = getHypDist(zeta, radial[i], radial[j], cosAngle);
+
+						// Calculate connection probability nodes i and j
+						connectionProb = getConnProb(hypDist, zeta, temp, mu);
+
+						// Simulate connection probability and assign link accordingly
+						if (ran1(&idum) < connectionProb) {
+							ofile << i << ' ' << j << std::endl;
+						}
+					}
+				}
+			}
+		} else {
+			// Do not pre-calculate trigonometric function values
+			if (rescaledTemp < cutoff1) {
+				// At tau = 0 we have the step model
+				for (int i = 0; i < nodes - 1; i++) {
+					for (int j = i + 1; j < nodes; j++) {
+
+						// Calculate angle between i and j
+						cosAngle = getCosAngle(dim, theta[i], theta[j]);
+
+						// Calculate hyperbolic distance between i and j
+						hypDist = getHypDist(zeta, radial[i], radial[j], cosAngle);
+
+						// Connect nodes in the step model if distance < radius
+						if (hypDist < radiusHyp) {
+							ofile << i << ' ' << j << std::endl;
+						}
+					}
+				}
+			}
+			else {
+				// Tau > 0
+				for (int i = 0; i < nodes - 1; i++) {
+					for (int j = i + 1; j < nodes; j++) {
+
+						// Calculate angle between i and j
+						cosAngle = getCosAngle(dim, theta[i], theta[j]);
+
+						// Calculate hyperbolic distance between i and j
+						hypDist = getHypDist(zeta, radial[i], radial[j], cosAngle);
+
+						// Calculate connection probability nodes i and j
+						connectionProb = getConnProb(hypDist, zeta, temp, mu);
+
+						// Simulate connection probability and assign link accordingly
+						if (ran1(&idum) < connectionProb) {
+							ofile << i << ' ' << j << std::endl;
+						}
+					}
 				}
 			}
 		}
+		ofile.close();
+		float time_connections = (float)(clock() - t_connections_start) / CLOCKS_PER_SEC;
+		float time_execution = (float)(clock() - t_overall_start) / CLOCKS_PER_SEC;
+		std::cout << "Done." << std::endl << std::endl;
+
+		/* Print execution time */
+		std::cout << "------ Execution times ------" << std::endl;
+		std::cout << "Finding radius: " << time_execution - time_coords - time_connections << std::endl;
+		std::cout << "Generating coordinates: " << time_coords << std::endl;
+		std::cout << "Generating links: " << time_connections << std::endl;
+		std::cout << "Overall: " << time_execution << std::endl;
+
+	} catch(std::bad_alloc& err) {
+		// Memory insufficient
+		delete[] _emergencyMemory; // delete emergency memory
+		std::cout << std::endl << "!!! ERROR: Memory insufficient. Network generation aborted." << std::endl;
+		return 0;
 	}
-	else {
-		// Tau > 0
-		for (int i = 0; i < nodes - 1; i++) {
-			for (int j = i + 1; j < nodes; j++) {
-
-				// Calculate angle between i and j
-				cosAngle = getCosAngle(dim, sin_theta[i], sin_theta[j], cos_theta[i], cos_theta[j]);
-
-				// Calculate hyperbolic distance between i and j
-				hypDist = getHypDist(zeta, radial[i], radial[j], cosAngle);
-
-				// Calculate connection probability nodes i and j
-				connectionProb = getConnProb(hypDist, zeta, temp, mu);
-
-				// Simulate connection probability and assign link accordingly
-				if (ran1(&idum) < connectionProb) {
-					ofile << i << ' ' << j << std::endl;
-				}
-			}
-		}
-	}
-	ofile.close();
-	float time_connections = (float)(clock() - t_connections_start) / CLOCKS_PER_SEC;
-	float time_execution = (float)(clock() - t_overall_start) / CLOCKS_PER_SEC;
-	std::cout << "Done." << std::endl << std::endl;
-
-	/* Print execution time */
-	std::cout << "------ Execution times ------" << std::endl;
-	std::cout << "Finding radius: " << time_execution - time_coords - time_connections << std::endl;
-	std::cout << "Generating coordinates: " << time_coords << std::endl;
-	std::cout << "Generating links: " << time_connections << std::endl;
-	std::cout << "Overall: " << time_execution << std::endl;
 
 	return 0;
 }
